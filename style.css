@@ -1,0 +1,17 @@
+#textWindow {
+  background: white;
+  height: 150px;
+  width: 60vw;
+  color: rgb(34, 28, 39);
+  font-size: 2rem;
+}
+
+#divTextArea {
+  /*display: none;*/
+  top: 60vh;
+  position: fixed;
+  right: 20vw;
+  padding: 10px;
+  opacity: 0.93;
+  z-index: 99999;
+}
