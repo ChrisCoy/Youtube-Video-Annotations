@@ -1,17 +1,49 @@
-#textWindow {
-  background: white;
-  height: 150px;
-  width: 60vw;
-  color: rgb(34, 28, 39);
-  font-size: 2rem;
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+
+.button-menu {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  font-family: "Roboto", Arial, sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ffffff;
+  margin-left: 16px;
+  transition: color 0.2;
 }
 
-#divTextArea {
-  /*display: none;*/
-  top: 60vh;
+.button-menu span {
+  margin-left: 8px;
+}
+
+.button-menu:hover {
+  color: #3ea6ff;
+}
+.button-menu:hover > svg path {
+  fill: #3ea6ff;
+}
+
+.black-back-screen {
   position: fixed;
-  right: 20vw;
-  padding: 10px;
-  opacity: 0.93;
-  z-index: 99999;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9998;
+  background-color: black;
+  opacity: 0.8;
+  border: none;
+}
+
+.extension-content {
+  border-radius: 5px;
+  border: rgba(255, 255, 255, 0.1) 1px solid;
+  z-index: 9999;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  width: 800px;
+  height: 450px;
+  background-color: #181818;
 }
