@@ -4,7 +4,7 @@
   "version": "0.1",
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/watch?v=*"],
+      "matches": ["https://www.youtube.com/watch?v=*", "https://www.youtube.com/watch?t=*"],
       "js": ["script.js"],
       "css": ["style.css"]
     }

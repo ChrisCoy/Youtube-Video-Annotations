@@ -37,31 +37,63 @@ function convertTime(value) {
 
 function addAnnotation(annotation) {
   if (annotation.resume != "") {
-    let items = localStorage.getItem(url);
-    items = JSON.parse(items);
+    let items = localStorage.getItem("@Annotation-extension");
 
-    console.log(items);
+    if (!!items) {
+      items = JSON.parse(items);
+    }
 
     let itemsTemp = [];
 
     if (items) {
       if (Array.isArray(items)) {
         items.push(annotation);
-        localStorage.setItem(url, JSON.stringify(items));
+        localStorage.setItem("@Annotation-extension", JSON.stringify(items));
       } else {
         itemsTemp.push(items);
         itemsTemp.push(annotation);
-        localStorage.setItem(url, JSON.stringify(itemsTemp));
+        localStorage.setItem("@Annotation-extension", JSON.stringify(itemsTemp));
       }
     } else {
-      localStorage.setItem(url, JSON.stringify(annotation));
+      itemsTemp.push(items);
+      localStorage.setItem("@Annotation-extension", JSON.stringify(itemsTemp));
     }
     document.getElementById("text-input").value = "";
+  } else {
+    alert("Cannot create a empty annotation!");
   }
 }
 
 function removeItem(div, value) {
   div.remove();
+  let items = localStorage.getItem("@Annotation-extension");
+  items = JSON.parse(items);
+
+  if (items) {
+    console.log("passei");
+    if (Array.isArray(items)) {
+      console.log("passei2");
+      console.log(items);
+      items = items.filter((annot) => {
+        return annot.url === value.url && annot.time !== value.time;
+      });
+
+      console.log(items);
+      localStorage.setItem("@Annotation-extension", JSON.stringify(items));
+    } else {
+      if (items.url !== value.url && items.time !== value.time) {
+        console.log("só testando");
+        localStorage.setItem("@Annotation-extension", "");
+      }
+    }
+  }
+
+  if (!document.querySelector(".list-item")) {
+    const noAnnotations = document.createElement("div");
+    noAnnotations.className = "no-annotations";
+    noAnnotations.innerText = "THERE IS NO ANNOTATIONS...";
+    document.getElementById("main-content").appendChild(noAnnotations);
+  }
 }
 
 function createSvgElement(type, size, color) {
@@ -223,6 +255,12 @@ function btnAction(selectedAnnotation) {
           ".title.style-scope.ytd-video-primary-info-renderer"
         ).innerText;
 
+        document
+          .querySelector(".title.style-scope.ytd-video-primary-info-renderer")
+          .addEventListener("remove", () => {
+            console.log("sei lá ");
+          });
+
         const videoTime = document.createElement("span");
         videoTime.innerText = convertTime(video.currentTime);
 
@@ -294,76 +332,180 @@ function btnAction(selectedAnnotation) {
       }
       break;
     case "LIST_ANNOTATION":
-      const mainContent = document.getElementById("main-content"); //nn precisa ter isso aqui, é só checar se já tem conteudo de lista na tela
-      mainContent.innerHTML = "";
+      if (!document.querySelector(".list-item")) {
+        const mainContent = document.getElementById("main-content"); //nn precisa ter isso aqui, é só checar se já tem conteudo de lista na tela
+        mainContent.innerHTML = "";
 
-      let annotations = localStorage.getItem(url);
-      annotations = annotations != null ? JSON.parse(annotations) : null;
+        let annotations = localStorage.getItem("@Annotation-extension");
+        annotations = !!annotations ? JSON.parse(annotations) : null;
 
-      console.log(annotations);
+        if (annotations) {
+          if (!Array.isArray(annotations)) {
+            let arrayTemp = [];
+            arrayTemp.push(annotations);
+            annotations = arrayTemp;
+          }
 
-      if (annotations) {
-        if (!Array.isArray(annotations)) {
-          let arrayTemp = [];
-          arrayTemp.push(annotations);
-          annotations = arrayTemp;
+          for (let annotationItem of annotations) {
+            const container = document.createElement("div");
+            container.className = "container-list";
+
+            const containerLine = document.createElement("div");
+            containerLine.className = "container-line";
+
+            const divItem = document.createElement("div");
+            divItem.className = "list-item";
+
+            const divTimeTitleButtons = document.createElement("div");
+            divTimeTitleButtons.className = "time-title-container";
+
+            const time = document.createElement("span");
+            time.className = "item-time";
+            time.innerText = convertTime(annotationItem.time);
+
+            const title = document.createElement("div");
+            title.className = "item-title";
+            title.innerText = annotationItem.title;
+            title.onclick = () => {
+              screenState = "VIEW_ANNOTATION";
+              btnAction({
+                url: annotationItem.url,
+                title: annotationItem.title,
+                time: annotationItem.time,
+                resume: annotationItem.resume,
+              });
+            };
+
+            const btnEdit = document.createElement("div"); //fazer o onclick
+            btnEdit.id = "button-edit-icon";
+            btnEdit.appendChild(createSvgElement("PENCIL_ICON", 25));
+
+            const btnRemove = document.createElement("div"); //fazer o onclick
+            btnRemove.id = "button-remove-icon";
+            btnRemove.appendChild(createSvgElement("TRASH_ICON", 25));
+            btnRemove.onclick = () => removeItem(divItem, { url, time: annotationItem.time });
+
+            const resume = document.createElement("p");
+            resume.className = "item-resume";
+            resume.innerText = annotationItem.resume;
+            divTimeTitleButtons.appendChild(time);
+            divTimeTitleButtons.appendChild(title);
+            divTimeTitleButtons.appendChild(btnEdit);
+            divTimeTitleButtons.appendChild(btnRemove);
+            //div.appendChild(title)      //buttonEdit
+            //div.appendChild(title)      //buttonRemove
+            container.appendChild(divTimeTitleButtons);
+            container.appendChild(resume);
+            containerLine.appendChild(container);
+            divItem.appendChild(containerLine);
+
+            mainContent.appendChild(divItem);
+          }
         }
-
-        for (let annotationItem of annotations) {
-          const container = document.createElement("div");
-          container.className = "container-list";
-
-          const containerLine = document.createElement("div");
-          containerLine.className = "container-line";
-
-          const divItem = document.createElement("div");
-          divItem.className = "list-item";
-
-          const divTimeTitleButtons = document.createElement("div");
-          divTimeTitleButtons.className = "time-title-container";
-
-          const time = document.createElement("span");
-          time.className = "item-time";
-          time.innerText = convertTime(annotationItem.time);
-
-          const title = document.createElement("div");
-          title.className = "item-title";
-          title.innerText = annotationItem.title;
-
-          const btnEdit = document.createElement("div"); //fazer o onclick
-          btnEdit.id = "button-edit-icon";
-          btnEdit.appendChild(createSvgElement("PENCIL_ICON", 25));
-
-          const btnRemove = document.createElement("div"); //fazer o onclick
-          btnRemove.id = "button-remove-icon";
-          btnRemove.appendChild(createSvgElement("TRASH_ICON", 25));
-          btnRemove.onclick = () => removeItem(divItem);
-
-          const resume = document.createElement("p");
-          resume.className = "item-resume";
-          resume.innerText = annotationItem.resume;
-          divTimeTitleButtons.appendChild(time);
-          divTimeTitleButtons.appendChild(title);
-          divTimeTitleButtons.appendChild(btnEdit);
-          divTimeTitleButtons.appendChild(btnRemove);
-          //div.appendChild(title)      //buttonEdit
-          //div.appendChild(title)      //buttonRemove
-          container.appendChild(divTimeTitleButtons);
-          container.appendChild(resume);
-          containerLine.appendChild(container);
-          divItem.appendChild(containerLine);
-
-          mainContent.appendChild(divItem);
-        }
+        document.getElementById("list-button-div").style = "background-color: #141414";
+        document.getElementById("new-button-div").style = "";
       }
 
+      if (!document.querySelector(".list-item")) {
+        const noAnnotations = document.createElement("div");
+        noAnnotations.className = "no-annotations";
+        noAnnotations.innerText = "THERE IS NO ANNOTATIONS...";
+        document.getElementById("main-content").appendChild(noAnnotations);
+      }
       break;
     case "VIEW_ANNOTATION":
+      if (!document.getElementById("div-title-time-view")) {
+        let items = localStorage.getItem("@Annotation-extension");
+
+        if (!!items) {
+          items = JSON.parse(items);
+          if (Array.isArray(items)) {
+            items = items.find((annot) => {
+              return (
+                annot.url === selectedAnnotation.url && annot.time === selectedAnnotation.time
+              );
+            });
+          }
+        }
+
+        document.getElementById("main-content").innerHTML = "";
+        const divTitleTime = document.createElement("div");
+        divTitleTime.id = "div-title-time-view";
+        divTitleTime.className = "div-title-time";
+
+        const videoTitle = document.createElement("h1");
+        videoTitle.innerText = items.title; //colocar valores
+
+        const videoTime = document.createElement("span");
+        videoTime.innerText = convertTime(items.time); //colocar valores
+
+        divTitleTime.appendChild(videoTitle);
+        divTitleTime.appendChild(videoTime);
+
+        const divTextContent = document.createElement("div");
+        divTextContent.id = "div-text-content";
+        divTextContent.className = "div-text-content";
+
+        const divAnnotationTextInput = document.createElement("div");
+        divAnnotationTextInput.className = "div-text-input";
+        const annotationTextInput = document.createElement("textarea");
+        annotationTextInput.id = "text-input";
+        annotationTextInput.className = "text-input";
+        annotationTextInput.maxLength = "1000";
+        annotationTextInput.innerText = items.resume;
+        annotationTextInput.readOnly = true;
+
+        divAnnotationTextInput.appendChild(annotationTextInput);
+
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.id = "cancel-button";
+        cancelButton.className = "cancel-button";
+        cancelButton.onclick = () => {
+          screenState = "LIST_ANNOTATION";
+          btnAction();
+        };
+        cancelButton.innerText = "BACK";
+
+        const link = document.createElement("a");
+        link.href = `https://youtu.be/${items.url}?t=${Math.floor(items.time)}`;
+        //link.target = "_blank";
+
+        const gotoButton = document.createElement("div");
+
+        gotoButton.className = "save-button";
+        gotoButton.innerText = "GO TO VIDEO";
+
+        link.appendChild(gotoButton);
+
+        const divButtons = document.createElement("div");
+        divButtons.className = "div-buttons";
+
+        divButtons.appendChild(cancelButton);
+        divButtons.appendChild(link);
+
+        divTextContent.appendChild(divAnnotationTextInput);
+        divTextContent.appendChild(divButtons);
+
+        const lineSeparator = document.createElement("div");
+        lineSeparator.className = "line-separator";
+
+        const mainContent = document.getElementById("main-content");
+        mainContent.appendChild(divTitleTime);
+        mainContent.appendChild(lineSeparator);
+        mainContent.appendChild(divTextContent);
+
+        document.getElementById("new-button-div").style = "";
+        document.getElementById("list-button-div").style = "";
+      }
+      break;
+    case "EDIT_ANNOTATION":
       break;
   }
 }
 
 function loadDiv() {
+  console.log("teste");
   divContent = document.querySelector(".style-scope ytd-video-primary-info-renderer #info");
   if (divContent) {
     const iconSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -403,3 +545,21 @@ function loadDiv() {
 if (!divContent) {
   divContentInterval = setInterval(loadDiv, 1000);
 }
+
+var testeinterval = setInterval(() => console.log("hey :D"), 1000);
+
+if (document.readyState === "ready" || document.readyState === "complete") {
+  console.log(":D");
+} else {
+  document.onreadystatechange = function () {
+    if (document.readyState == "complete") {
+      console.log(":D");
+    }
+  };
+}
+
+// function reloadExtension() {
+//   console.log("passei pelo reload extension :D");
+//   divContentInterval = setInterval(loadDiv, 1000);
+//   console.log(divContentInterval);
+// }

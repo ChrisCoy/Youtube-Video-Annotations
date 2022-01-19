@@ -205,9 +205,28 @@ body {
 
 .div-buttons > button {
   cursor: pointer;
-  width: 130px;
-  height: 40px;
+  min-width: 130px;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   transition: 0.2s;
+  text-decoration: none;
+}
+
+a > .save-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 130px;
+  min-height: 40px;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+a {
+  text-decoration: none;
 }
 
 .save-button {
@@ -217,6 +236,9 @@ body {
   font-size: 16px;
   font-weight: 600;
   border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .save-button:hover {
   filter: brightness(0.8);
@@ -336,4 +358,10 @@ body {
 .item-title:hover {
   color: #3ea6ff;
   cursor: pointer;
+}
+
+.no-annotations {
+  font-size: 24px;
+  padding: 30px 50px;
+  font-weight: 600;
 }
