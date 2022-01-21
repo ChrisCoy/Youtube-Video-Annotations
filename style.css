@@ -31,29 +31,6 @@ body {
   border-radius: 15px;
 }
 
-.button-menu {
-  display: flex;
-  align-items: center;
-  margin-top: 5px;
-  font-weight: 500;
-  cursor: pointer;
-  font-size: 14px;
-  color: #ffffff;
-  margin-left: 16px;
-  transition: 0.2s;
-}
-
-.button-menu span {
-  margin-left: 8px;
-}
-
-.button-menu:hover {
-  color: #3ea6ff;
-}
-.button-menu:hover > svg path {
-  fill: #3ea6ff;
-}
-
 .black-back-screen {
   position: fixed;
   width: 100vw;

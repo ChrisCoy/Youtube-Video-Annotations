@@ -1,19 +1,28 @@
+if (!window.location.href.startsWith("https://www.youtube.com/")) {
+  alert("YOUTUBE NOTES EXTENSION ERROR\n\n" + "You must be on a youtube video page!");
+
+  throw new Error("you must be on a youtube video page!");
+} else {
+  if (!window.location.href.startsWith("https://www.youtube.com/watch?")) {
+    alert("YOUTUBE NOTES EXTENSION ERROR\n\n" + "Maximize the video!");
+    throw new Error("Maximize the video!");
+  }
+}
 var screenState = "";
 
-let divContent; //div from youtube that will gotta something just when the page is full loaded
-let divContentInterval;
-const htmlBody = document.getElementsByTagName("body")[0];
+var isOpen = false;
 
-let blackBackScreen;
-let video;
-let url;
-
-let divExtensionContent;
+if (!!document.querySelectorAll("video").length) {
+  screenState = "NEW_ANNOTATION";
+  btnAction();
+} else {
+  alert("NO VIDEOS FOUND");
+}
 
 function closeWindow() {
-  blackBackScreen.remove();
-  divExtensionContent.remove();
-  video.play();
+  document.getElementsByClassName("black-back-screen")[0].remove();
+  document.getElementById("extension-content").remove();
+  document.querySelectorAll("video")[0].play();
 }
 
 function convertTime(value) {
@@ -39,59 +48,75 @@ function addAnnotation(annotation) {
   if (annotation.resume != "") {
     let items = localStorage.getItem("@Annotation-extension");
 
-    if (!!items) {
+    if (!items) {
+      items = [];
+    } else {
       items = JSON.parse(items);
     }
+    items.push(annotation);
+    localStorage.setItem("@Annotation-extension", JSON.stringify(items));
 
-    let itemsTemp = [];
-
-    if (items) {
-      if (Array.isArray(items)) {
-        items.push(annotation);
-        localStorage.setItem("@Annotation-extension", JSON.stringify(items));
-      } else {
-        itemsTemp.push(items);
-        itemsTemp.push(annotation);
-        localStorage.setItem("@Annotation-extension", JSON.stringify(itemsTemp));
-      }
-    } else {
-      itemsTemp.push(items);
-      localStorage.setItem("@Annotation-extension", JSON.stringify(itemsTemp));
-    }
     document.getElementById("text-input").value = "";
   } else {
     alert("Cannot create a empty annotation!");
   }
 }
 
-function removeItem(div, value) {
+function editAnnotation(annotation, old) {
+  if (annotation.resume != "") {
+    let items = localStorage.getItem("@Annotation-extension");
+
+    if (!items) {
+      items = [];
+    } else {
+      items = JSON.parse(items);
+    }
+
+    items.map((x) => {
+      if (
+        x.url === old.url &&
+        x.time === old.time &&
+        x.resume.substring(0, 30) === old.resume.substring(0, 30)
+      ) {
+        x.resume = annotation.resume;
+        return x;
+      }
+      return x;
+    });
+
+    localStorage.setItem("@Annotation-extension", JSON.stringify(items));
+
+    document.getElementById("text-input").value = "";
+
+    screenState = "LIST_ANNOTATION";
+    btnAction();
+  } else {
+    alert("Cannot create a empty note!");
+  }
+}
+
+function removeItem(div, annot) {
   div.remove();
   let items = localStorage.getItem("@Annotation-extension");
   items = JSON.parse(items);
 
-  if (items) {
-    console.log("passei");
-    if (Array.isArray(items)) {
-      console.log("passei2");
-      console.log(items);
-      items = items.filter((annot) => {
-        return annot.url === value.url && annot.time !== value.time;
-      });
-
-      console.log(items);
-      localStorage.setItem("@Annotation-extension", JSON.stringify(items));
-    } else {
-      if (items.url !== value.url && items.time !== value.time) {
-        console.log("só testando");
-        localStorage.setItem("@Annotation-extension", "");
-      }
+  items = items.filter((x) => {
+    if (x.url !== annot.url) {
+      return true;
     }
-  }
+    if (x.time === annot.time && x.resume === annot.resume) {
+      return false;
+    }
+
+    return true;
+  });
+
+  localStorage.setItem("@Annotation-extension", JSON.stringify(items));
 
   if (!document.querySelector(".list-item")) {
     const noAnnotations = document.createElement("div");
     noAnnotations.className = "no-annotations";
-    noAnnotations.innerText = "THERE IS NO ANNOTATIONS...";
+    noAnnotations.innerText = "THERE IS NO NOTES...";
     document.getElementById("main-content").appendChild(noAnnotations);
   }
 }
@@ -185,19 +210,20 @@ function createSvgElement(type, size, color) {
 }
 
 function btnAction(selectedAnnotation) {
-  if (!document.querySelector("#extension-content")) {
-    url = window.location.href.split("=")[1].split("&")[0];
-    video = document.querySelector(".video-stream.html5-main-video");
+  const url = window.location.href.split("=")[1].split("&")[0];
+  const video = document.querySelectorAll("video")[0];
+  if (!isOpen) {
+    isOpen = true;
     video.pause();
 
     //creating the black screen that will be on the top of everything
-    blackBackScreen = document.createElement("div");
+    const blackBackScreen = document.createElement("div");
     blackBackScreen.className = "black-back-screen";
     blackBackScreen.onclick = closeWindow;
-    htmlBody.appendChild(blackBackScreen);
+    document.getElementsByTagName("body")[0].appendChild(blackBackScreen);
 
     //extension content div
-    divExtensionContent = document.createElement("div");
+    const divExtensionContent = document.createElement("div");
     divExtensionContent.className = "extension-content";
     divExtensionContent.id = "extension-content";
 
@@ -239,7 +265,7 @@ function btnAction(selectedAnnotation) {
 
     divExtensionContent.appendChild(mainContent);
     divExtensionContent.appendChild(sideNav);
-    htmlBody.appendChild(divExtensionContent);
+    document.getElementsByTagName("body")[0].appendChild(divExtensionContent);
   }
 
   switch (screenState) {
@@ -254,12 +280,6 @@ function btnAction(selectedAnnotation) {
         videoTitle.innerText = document.querySelector(
           ".title.style-scope.ytd-video-primary-info-renderer"
         ).innerText;
-
-        document
-          .querySelector(".title.style-scope.ytd-video-primary-info-renderer")
-          .addEventListener("remove", () => {
-            console.log("sei lá ");
-          });
 
         const videoTime = document.createElement("span");
         videoTime.innerText = convertTime(video.currentTime);
@@ -280,9 +300,9 @@ function btnAction(selectedAnnotation) {
 
         annotationTextInput.addEventListener("focus", () => {
           divAnnotationTextInput.style = `
-            border: 2px solid #3ea6ff;
-            padding: 0px;
-            `;
+        border: 2px solid #3ea6ff;
+        padding: 0px;
+        `;
         });
         annotationTextInput.addEventListener("focusout", () => {
           divAnnotationTextInput.style = "";
@@ -340,12 +360,6 @@ function btnAction(selectedAnnotation) {
         annotations = !!annotations ? JSON.parse(annotations) : null;
 
         if (annotations) {
-          if (!Array.isArray(annotations)) {
-            let arrayTemp = [];
-            arrayTemp.push(annotations);
-            annotations = arrayTemp;
-          }
-
           for (let annotationItem of annotations) {
             const container = document.createElement("div");
             container.className = "container-list";
@@ -379,11 +393,15 @@ function btnAction(selectedAnnotation) {
             const btnEdit = document.createElement("div"); //fazer o onclick
             btnEdit.id = "button-edit-icon";
             btnEdit.appendChild(createSvgElement("PENCIL_ICON", 25));
+            btnEdit.onclick = () => {
+              screenState = "EDIT_ANNOTATION";
+              btnAction(annotationItem);
+            };
 
             const btnRemove = document.createElement("div"); //fazer o onclick
             btnRemove.id = "button-remove-icon";
             btnRemove.appendChild(createSvgElement("TRASH_ICON", 25));
-            btnRemove.onclick = () => removeItem(divItem, { url, time: annotationItem.time });
+            btnRemove.onclick = () => removeItem(divItem, annotationItem);
 
             const resume = document.createElement("p");
             resume.className = "item-resume";
@@ -402,6 +420,7 @@ function btnAction(selectedAnnotation) {
             mainContent.appendChild(divItem);
           }
         }
+
         document.getElementById("list-button-div").style = "background-color: #141414";
         document.getElementById("new-button-div").style = "";
       }
@@ -409,7 +428,7 @@ function btnAction(selectedAnnotation) {
       if (!document.querySelector(".list-item")) {
         const noAnnotations = document.createElement("div");
         noAnnotations.className = "no-annotations";
-        noAnnotations.innerText = "THERE IS NO ANNOTATIONS...";
+        noAnnotations.innerText = "THERE IS NO NOTES...";
         document.getElementById("main-content").appendChild(noAnnotations);
       }
       break;
@@ -422,7 +441,9 @@ function btnAction(selectedAnnotation) {
           if (Array.isArray(items)) {
             items = items.find((annot) => {
               return (
-                annot.url === selectedAnnotation.url && annot.time === selectedAnnotation.time
+                annot.url === selectedAnnotation.url &&
+                annot.time === selectedAnnotation.time &&
+                annot.resume.substring(0, 30) === selectedAnnotation.resume.substring(0, 30)
               );
             });
           }
@@ -434,7 +455,7 @@ function btnAction(selectedAnnotation) {
         divTitleTime.className = "div-title-time";
 
         const videoTitle = document.createElement("h1");
-        videoTitle.innerText = items.title; //colocar valores
+        videoTitle.innerText = "Viewing: " + items.title; //colocar valores
 
         const videoTime = document.createElement("span");
         videoTime.innerText = convertTime(items.time); //colocar valores
@@ -457,19 +478,9 @@ function btnAction(selectedAnnotation) {
 
         divAnnotationTextInput.appendChild(annotationTextInput);
 
-        const cancelButton = document.createElement("button");
-        cancelButton.type = "button";
-        cancelButton.id = "cancel-button";
-        cancelButton.className = "cancel-button";
-        cancelButton.onclick = () => {
-          screenState = "LIST_ANNOTATION";
-          btnAction();
-        };
-        cancelButton.innerText = "BACK";
-
         const link = document.createElement("a");
         link.href = `https://youtu.be/${items.url}?t=${Math.floor(items.time)}`;
-        //link.target = "_blank";
+        link.target = "_top";
 
         const gotoButton = document.createElement("div");
 
@@ -481,7 +492,6 @@ function btnAction(selectedAnnotation) {
         const divButtons = document.createElement("div");
         divButtons.className = "div-buttons";
 
-        divButtons.appendChild(cancelButton);
         divButtons.appendChild(link);
 
         divTextContent.appendChild(divAnnotationTextInput);
@@ -500,66 +510,94 @@ function btnAction(selectedAnnotation) {
       }
       break;
     case "EDIT_ANNOTATION":
+      if (!document.getElementById("div-title-time-edit")) {
+        document.getElementById("main-content").innerHTML = "";
+        const divTitleTime = document.createElement("div");
+        divTitleTime.id = "div-title-time-edit";
+        divTitleTime.className = "div-title-time";
+
+        const videoTitle = document.createElement("h1");
+        videoTitle.innerText =
+          "Editing: " +
+          document.querySelector(".title.style-scope.ytd-video-primary-info-renderer")
+            .innerText;
+
+        const videoTime = document.createElement("span");
+        videoTime.innerText = convertTime(video.currentTime);
+
+        divTitleTime.appendChild(videoTitle);
+        divTitleTime.appendChild(videoTime);
+
+        const divTextContent = document.createElement("div");
+        divTextContent.id = "div-text-content";
+        divTextContent.className = "div-text-content";
+
+        const divAnnotationTextInput = document.createElement("div");
+        divAnnotationTextInput.className = "div-text-input";
+        const annotationTextInput = document.createElement("textarea");
+        annotationTextInput.id = "text-input";
+        annotationTextInput.className = "text-input";
+        annotationTextInput.maxLength = "1000";
+        annotationTextInput.value = selectedAnnotation.resume;
+
+        annotationTextInput.addEventListener("focus", () => {
+          divAnnotationTextInput.style = `
+        border: 2px solid #3ea6ff;
+        padding: 0px;
+        `;
+        });
+        annotationTextInput.addEventListener("focusout", () => {
+          divAnnotationTextInput.style = "";
+        });
+        divAnnotationTextInput.appendChild(annotationTextInput);
+
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.id = "cancel-button";
+        cancelButton.className = "cancel-button";
+        cancelButton.onclick = () => {
+          screenState = "LIST_ANNOTATION";
+          btnAction();
+        };
+        cancelButton.innerText = "CANCEL";
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.id = "save-button";
+        saveButton.onclick = () => {
+          editAnnotation(
+            {
+              url,
+              title: videoTitle.innerText,
+              time: video.currentTime,
+              resume: annotationTextInput.value,
+            },
+            selectedAnnotation
+          );
+        };
+        saveButton.className = "save-button";
+        saveButton.innerText = "SAVE";
+
+        const divButtons = document.createElement("div");
+        divButtons.className = "div-buttons";
+
+        divButtons.appendChild(cancelButton);
+        divButtons.appendChild(saveButton);
+
+        divTextContent.appendChild(divAnnotationTextInput);
+        divTextContent.appendChild(divButtons);
+
+        const lineSeparator = document.createElement("div");
+        lineSeparator.className = "line-separator";
+
+        const mainContent = document.getElementById("main-content");
+        mainContent.appendChild(divTitleTime);
+        mainContent.appendChild(lineSeparator);
+        mainContent.appendChild(divTextContent);
+
+        document.getElementById("new-button-div").style = "background-color: #141414";
+        document.getElementById("list-button-div").style = "";
+      }
       break;
   }
 }
-
-function loadDiv() {
-  console.log("teste");
-  divContent = document.querySelector(".style-scope ytd-video-primary-info-renderer #info");
-  if (divContent) {
-    const iconSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-
-    iconSvg.setAttributeNS("", "height", "21");
-    iconSvg.setAttributeNS("", "width", "20");
-    iconSvg.setAttributeNS("", "viewBox", "0 0 24 24");
-    iconSvg.setAttributeNS("", "fill", "#FFFFFF");
-
-    const iconPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    iconPath.setAttributeNS(
-      "",
-      "d",
-      "m16 16a1 1 0 0 1 -1 1h-2v2a1 1 0 0 1 -2 0v-2h-2a1 1 0 0 1 0-2h2v-2a1 1 0 0 1 2 0v2h2a1 1 0 0 1 1 1zm6-5.515v8.515a5.006 5.006 0 0 1 -5 5h-10a5.006 5.006 0 0 1 -5-5v-14a5.006 5.006 0 0 1 5-5h4.515a6.958 6.958 0 0 1 4.95 2.05l3.484 3.486a6.951 6.951 0 0 1 2.051 4.949zm-6.949-7.021a5.01 5.01 0 0 0 -1.051-.78v4.316a1 1 0 0 0 1 1h4.316a4.983 4.983 0 0 0 -.781-1.05zm4.949 7.021c0-.165-.032-.323-.047-.485h-4.953a3 3 0 0 1 -3-3v-4.953c-.162-.015-.321-.047-.485-.047h-4.515a3 3 0 0 0 -3 3v14a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3z"
-    );
-
-    iconSvg.appendChild(iconPath);
-
-    const divButton = document.createElement("div");
-    divButton.onclick = () => {
-      screenState = "NEW_ANNOTATION";
-      btnAction();
-    };
-    divButton.className = "button-menu";
-
-    divButton.appendChild(iconSvg);
-
-    const spanTextTitle = document.createElement("span");
-    spanTextTitle.innerText = "NEW ANNOTATION";
-
-    divButton.appendChild(spanTextTitle);
-    divContent.appendChild(divButton);
-    clearInterval(divContentInterval);
-  }
-}
-
-if (!divContent) {
-  divContentInterval = setInterval(loadDiv, 1000);
-}
-
-var testeinterval = setInterval(() => console.log("hey :D"), 1000);
-
-if (document.readyState === "ready" || document.readyState === "complete") {
-  console.log(":D");
-} else {
-  document.onreadystatechange = function () {
-    if (document.readyState == "complete") {
-      console.log(":D");
-    }
-  };
-}
-
-// function reloadExtension() {
-//   console.log("passei pelo reload extension :D");
-//   divContentInterval = setInterval(loadDiv, 1000);
-//   console.log(divContentInterval);
-// }
