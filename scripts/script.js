@@ -517,13 +517,10 @@ function btnAction(selectedAnnotation) {
         divTitleTime.className = "div-title-time";
 
         const videoTitle = document.createElement("h1");
-        videoTitle.innerText =
-          "Editing: " +
-          document.querySelector(".title.style-scope.ytd-video-primary-info-renderer")
-            .innerText;
+        videoTitle.innerText = "Editing: " + selectedAnnotation.title;
 
         const videoTime = document.createElement("span");
-        videoTime.innerText = convertTime(video.currentTime);
+        videoTime.innerText = convertTime(selectedAnnotation.time);
 
         divTitleTime.appendChild(videoTitle);
         divTitleTime.appendChild(videoTime);
