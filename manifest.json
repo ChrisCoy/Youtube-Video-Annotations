@@ -1,6 +1,6 @@
 {
   "name": "Youtube Notes",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "A simple tool to create notes for youtube videos.",
   "homepage_url": "https://github.com/ChrisCoy/Youtube-Video-Annotations",
   "minimum_chrome_version": "89",

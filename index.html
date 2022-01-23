@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       html,
       body {
         padding: 0;
         margin: 0;
+        font-family: "Roboto", Arial, Helvetica, sans-serif;
+        font-weight: 600;
       }
 
       .container {
@@ -17,6 +25,7 @@
         justify-content: center;
         align-items: center;
         border: rgba(255, 255, 255, 0.2) 1px solid;
+        gap: 20px;
       }
 
       .button {
@@ -34,11 +43,18 @@
         justify-content: center;
         align-items: center;
         gap: 10px;
+        text-decoration: none;
+        min-width: 120px;
+        transition: 0.2s ease-in-out;
+      }
+
+      .button span {
+        font-weight: 600;
       }
 
       .button:hover {
         background-color: #3ea6ff;
-        border: none;
+        border: #3ea6ff 1px solid;
         color: #e9e9e9;
       }
 
@@ -47,36 +63,44 @@
         width: 20px;
         height: 20px;
         fill: rgba(255, 255, 255, 0.4);
+        transition: 0.2s ease-in-out;
       }
 
       .button:hover > svg {
         fill: #e9e9e9;
-        animation-name: popAnimation;
-        animation-duration: 0.4s;
-        transition: ease-in-out;
       }
 
-      @keyframes popAnimation {
-        0% {
-          width: 20px;
-          height: 20px;
-        }
-        50% {
-          width: 25px;
-          height: 25px;
-        }
-        75% {
-          width: 20px;
-          height: 20px;
-        }
-        85% {
-          width: 22px;
-          height: 22px;
-        }
-        100% {
-          width: 20px;
-          height: 20px;
-        }
+      .footer {
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.4);
+        padding-bottom: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.2s ease-in-out;
+      }
+
+      .button:first-child {
+        margin-top: 20px;
+      }
+
+      .footer > svg {
+        fill: #ff3e7800;
+        margin-left: 10px;
+        stroke: rgba(255, 255, 255, 0.4);
+        stroke-width: 2px;
+        transition: 0.2s ease-in-out;
+      }
+
+      .footer:hover {
+        color: #3ea6ff;
+        fill: #3ea6ff;
+      }
+
+      .footer:hover > svg {
+        fill: #ff3e68;
+        stroke: none;
+        stroke-width: 0;
       }
     </style>
   </head>
@@ -92,8 +116,20 @@
             <path d="M21,24H13V13H24v8A3,3,0,0,1,21,24Zm-6-2h6a1,1,0,0,0,1-1V15H15Z" />
           </g>
         </svg>
-        OPEN MENU
+        <span>OPEN MENU</span>
       </button>
+      <a href="https://github.com/ChrisCoy/Youtube-Video-Notes" class="button" target="_blank"
+        >ABOUT</a
+      >
+
+      <a href="https://github.com/ChrisCoy" target="_blank" class="footer">
+        <span> MADE WITH </span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+          <path
+            d="M12 4.419c-2.826-5.695-11.999-4.064-11.999 3.27 0 7.27 9.903 10.938 11.999 15.311 2.096-4.373 12-8.041 12-15.311 0-7.327-9.17-8.972-12-3.27z"
+          />
+        </svg>
+      </a>
       <script src="inject.js"></script>
     </div>
   </body>
